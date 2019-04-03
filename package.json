@@ -1,0 +1,37 @@
+{
+  "name": "@t1mmaas/remote-js-ui",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "start": "ts-node-dev src/server/index.ts",
+    "build": "rimraf build && tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "bin": {
+    "remote-js-ui": "./bin/remote-js-ui.js"
+  },
+  "files": [
+    "bin",
+    "build",
+    "public"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^4.16.1",
+    "@types/node": "^11.13.0",
+    "@types/ws": "^6.0.1",
+    "rimraf": "^2.6.3",
+    "ts-node-dev": "^1.0.0-pre.32",
+    "typescript": "3.4.1"
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "rxjs": "^6.4.0",
+    "typesafe-actions": "^4.0.0",
+    "ws": "^6.2.1"
+  }
+}
