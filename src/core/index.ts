@@ -48,6 +48,8 @@ function scriptFactory(script: string): IScript {
   function kill() {
     if (proc) {
       proc.kill("SIGINT");
+      cp.spawnSync("kill", ["-INT", `-${proc.pid}`]);
+
       stateSubject.next("stopped");
     }
     if (unsubscribable) {
