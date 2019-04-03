@@ -47,7 +47,7 @@ function scriptFactory(script: string): IScript {
 
   function kill() {
     if (proc) {
-      proc.kill();
+      proc.kill("SIGINT");
       stateSubject.next("stopped");
     }
     if (unsubscribable) {
