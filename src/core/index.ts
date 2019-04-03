@@ -34,7 +34,10 @@ function scriptFactory(script: string): IScript {
   let unsubscribable: Unsubscribable;
 
   function run() {
-    proc = cp.spawn("npm", ["run", script]);
+    proc = cp.spawn("npm", ["run", script], {
+      shell: true,
+      detached: true
+    });
 
     stateSubject.next("running");
 
