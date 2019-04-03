@@ -72,7 +72,7 @@ function getScriptActionName(state) {
  */
 function updateScriptState(scriptStateDTO) {
   const { name, state } = scriptStateDTO;
-  const node = scriptsNode.querySelector(`[data-name=${name}]`);
+  const node = scriptsNode.querySelector(`[data-name="${name}"]`);
   if (node instanceof HTMLElement) {
     node.dataset.state = state;
     node.innerText = getScriptActionName(state);
