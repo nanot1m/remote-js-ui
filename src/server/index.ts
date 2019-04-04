@@ -2,81 +2,86 @@ import express from "express";
 import http from "http";
 import path from "path";
 import WebSocket from "ws";
+import { merge } from "rxjs";
+import { map } from "rxjs/operators";
+
+import { getProjectScripts, IProjectScripts } from "../core";
+
+import { FromClientToServerActions } from "../shared/actions/FromClientToServerActions";
 import {
-  FromClientToServerActions,
   sendScripts,
   scriptStateChange,
-  scriptStdOutNewChunk
-} from "../shared/actions";
-import { getProjectScripts, IScript } from "../core";
-import { Unsubscribable } from "rxjs";
+  scriptStdOutNewChunk as scriptStdoutNewChunk,
+  npmInstalState,
+  npmInstallStdoutChunk
+} from "../shared/actions/serverActions";
 
-function emit<T>(ws: WebSocket, obj: T) {
-  ws.send(JSON.stringify(obj));
-}
+import { config } from "./config";
+import { parseMessage, sendMessage } from "./utils/wsUtils";
 
-function parseMessage(
-  message: WebSocket.Data
-): FromClientToServerActions | null {
-  try {
-    return JSON.parse(message.toString());
-  } catch (ex) {
-    return null;
-  }
-}
-
-function getMessageHandler(ws: WebSocket, scripts: Record<string, IScript>) {
+function getMessageHandler(ws: WebSocket, scripts: IProjectScripts) {
   return (message: WebSocket.Data) => {
-    const action = parseMessage(message);
+    const action = parseMessage<FromClientToServerActions>(message);
     if (!action) {
       return;
     }
 
     switch (action.type) {
       case "scripts/GET": {
-        emit(ws, sendScripts(scripts));
+        sendMessage(ws, sendScripts(scripts));
         break;
       }
 
       case "scripts/RUN": {
         const name = action.payload;
-        scripts[name].run();
+        scripts.npmScripts[name].run();
         break;
       }
 
       case "scripts/KILL": {
         const name = action.payload;
-        scripts[name].kill();
+        scripts.npmScripts[name].kill();
+        break;
+      }
+
+      case "scripts/RUN_NPM_INSTALL": {
+        scripts.npmInstall.run();
         break;
       }
     }
   };
 }
 
-function initScriptSubscriptions(
-  scripts: Record<string, IScript>,
-  ws: WebSocket
-) {
-  const unsubscribables: Unsubscribable[] = [];
+function initScriptSubscriptions(scripts: IProjectScripts, ws: WebSocket) {
+  const stateSubscription = merge(
+    ...Object.entries(scripts.npmScripts).map(([name, script]) =>
+      script.state.pipe(map(state => ({ name, state })))
+    )
+  ).subscribe(x => sendMessage(ws, scriptStateChange(x)));
 
-  for (const script of Object.values(scripts)) {
-    const { name } = script;
-    unsubscribables.push(
-      script.state.subscribe(state => {
-        emit(ws, scriptStateChange({ name, state }));
-      })
-    );
-    unsubscribables.push(
-      script.stdout.subscribe(chunk => {
-        emit(ws, scriptStdOutNewChunk({ name, chunk: chunk.toString() }));
-      })
-    );
-  }
+  const stdoutSubscription = merge(
+    ...Object.entries(scripts.npmScripts).map(([name, script]) =>
+      script.stdout.pipe(map(chunk => ({ name, chunk })))
+    )
+  ).subscribe(x => sendMessage(ws, scriptStdoutNewChunk(x)));
 
-  return () => unsubscribables.forEach(x => x.unsubscribe());
+  const npmInstallSubscription = scripts.npmInstall.state.subscribe(x =>
+    sendMessage(ws, npmInstalState(x))
+  );
+
+  const npmInstallStdoutSubscription = scripts.npmInstall.stdout.subscribe(x =>
+    sendMessage(ws, npmInstallStdoutChunk(x))
+  );
+
+  return () => {
+    [
+      stateSubscription,
+      stdoutSubscription,
+      npmInstallSubscription,
+      npmInstallStdoutSubscription
+    ].forEach(x => x.unsubscribe());
+  };
 }
-
-const PORT = Number(process.env.PORT) || 8080;
 
 function run() {
   const scripts = getProjectScripts();
@@ -98,8 +103,8 @@ function run() {
     ws.on("error", unsubscribe);
   });
 
-  server.listen(PORT, () => {
-    console.log(`🌏 Server started on http://localhost:${PORT} 🙃`);
+  server.listen(config.port, () => {
+    console.log(`🌏 Server started on http://localhost:${config.port} 🙃`);
   });
 }
 

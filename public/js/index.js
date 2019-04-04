@@ -13,10 +13,20 @@ const stdoutNode = (() => {
   throw new Error("stdout is not textarea");
 })();
 
-const ws = setupWS((action, dispatch) => {
+/** @type {HTMLButtonElement} */
+const npmInstallButton = (() => {
+  const node = document.getElementById("npm-install");
+  if (node instanceof HTMLButtonElement) {
+    return node;
+  }
+  throw new Error("stdout is not textarea");
+})();
+
+const ws = setupWS(action => {
   switch (action.type) {
     case "scripts/SEND": {
-      initScriptsView(action.payload);
+      initScriptsView(action.payload.npmScripts);
+      initNpmInstall();
       break;
     }
 
@@ -26,7 +36,17 @@ const ws = setupWS((action, dispatch) => {
     }
 
     case "scripts/STD_OUT_NEW_CHUNK": {
-      updateStdout(action.payload);
+      updateStdout(action.payload.name, action.payload.chunk);
+      break;
+    }
+
+    case "scripts/NPM_INSTALL_STATE": {
+      updateNpmInstall(action.payload);
+      break;
+    }
+
+    case "scripts/NPM_INSTALL_STDOUT_CHUNK": {
+      updateStdout("npm install", action.payload);
       break;
     }
   }
@@ -61,6 +81,12 @@ function initScriptsView(scripts) {
   });
 }
 
+function initNpmInstall() {
+  npmInstallButton.addEventListener("click", () => {
+    ws.dispatch({ type: "scripts/RUN_NPM_INSTALL" });
+  });
+}
+
 function getScriptActionName(state) {
   return state === "stopped" ? "Run" : "Stop";
 }
@@ -80,12 +106,22 @@ function updateScriptState(scriptStateDTO) {
 }
 
 /**
- * @param {Object} scriptStdoutDTO
- * @param {string} scriptStdoutDTO.name
- * @param {string} scriptStdoutDTO.chunk
+ *
+ * @param {string} state
  */
-function updateStdout(scriptStdoutDTO) {
-  stdoutNode.value = `${stdoutNode.value}\n${scriptStdoutDTO.chunk}`;
+function updateNpmInstall(state) {
+  const running = state === "running";
+
+  npmInstallButton.disabled = running;
+  npmInstallButton.innerText = running ? "installing..." : "Run npm install";
+}
+
+/**
+ * @param {string} name
+ * @param {string} chunk
+ */
+function updateStdout(name, chunk) {
+  stdoutNode.value = `${stdoutNode.value}\n[${name}]${chunk}`;
 }
 
 /**

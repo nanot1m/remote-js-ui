@@ -1,11 +1,11 @@
 // @ts-check
 
 /**
- * @typedef {import('../../src/shared/actions').FromServerToClientActions} FromServerToClientActions
+ * @typedef {import('../../src/shared/actions/FromServerToClientActions').FromServerToClientActions} FromServerToClientActions
  */
 
 /**
- * @typedef {import('../../src/shared/actions').FromClientToServerActions} FromClientToServerActions
+ * @typedef {import('../../src/shared/actions/FromClientToServerActions').FromClientToServerActions} FromClientToServerActions
  */
 
 /**
@@ -16,24 +16,40 @@
  * @param {MessageHandler} messageHandler
  */
 export function setupWS(messageHandler) {
-  const ws = new WebSocket(`ws://${location.host}`);
-
-  ws.addEventListener("message", event => {
-    const action = parseMessage(event.data);
-    if (!action) {
-      return;
-    }
-    messageHandler(action, dispatch);
-  });
-
   const messageQueue = [];
 
-  ws.addEventListener("open", () => {
-    let message;
-    while ((message = messageQueue.shift())) {
-      dispatch(message);
-    }
-  });
+  let ws;
+
+  function init() {
+    ws = new WebSocket(`ws://${location.host}`);
+
+    ws.addEventListener("message", event => {
+      const action = parseMessage(event.data);
+      if (!action) {
+        return;
+      }
+      messageHandler(action, dispatch);
+    });
+
+    ws.addEventListener("open", () => {
+      let message;
+      while ((message = messageQueue.shift())) {
+        dispatch(message);
+      }
+    });
+
+    ws.addEventListener("close", () => {
+      setTimeout(init, 3000);
+    });
+
+    ws.addEventListener("error", () => {
+      setTimeout(init, 3000);
+    });
+
+    return ws;
+  }
+
+  init();
 
   /**
    * @param {FromClientToServerActions} action
