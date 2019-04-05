@@ -1,4 +1,4 @@
-import { ProcessStateType } from "./ProcessStateType";
+import { ProcessStateType } from "core/processes/ProcessStateType";
 import { Observable } from "rxjs";
 
 export interface IProcess {

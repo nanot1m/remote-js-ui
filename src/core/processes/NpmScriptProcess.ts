@@ -1,4 +1,4 @@
-import { Process } from "./Process";
+import { Process } from "core/processes/Process";
 
 export class NpmScriptProcess extends Process {
   public static fromScriptName(name: string) {

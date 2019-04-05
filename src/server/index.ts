@@ -5,19 +5,20 @@ import WebSocket from "ws";
 import { merge } from "rxjs";
 import { map } from "rxjs/operators";
 
-import { getProjectScripts, IProjectScripts } from "../core";
+import { getProjectScripts, IProjectScripts } from "core";
 
-import { FromClientToServerActions } from "../shared/actions/FromClientToServerActions";
+import { FromClientToServerActions } from "shared/actions/FromClientToServerActions";
 import {
   sendScripts,
   scriptStateChange,
   scriptStdOutNewChunk as scriptStdoutNewChunk,
   npmInstalState,
   npmInstallStdoutChunk
-} from "../shared/actions/serverActions";
+} from "shared/actions/serverActions";
 
 import { config } from "./config";
-import { parseMessage, sendMessage } from "./utils/wsUtils";
+import { sendMessage } from "./utils/wsUtils";
+import { parseMessage } from "shared/utils/wsUtils";
 
 function getMessageHandler(ws: WebSocket, scripts: IProjectScripts) {
   return (message: WebSocket.Data) => {

@@ -1,5 +1,5 @@
 import { createAction, createStandardAction } from "typesafe-actions";
-import { ProcessStateType, IProjectScripts } from "../../core";
+import { ProcessStateType, IProjectScripts } from "core";
 
 export interface IScriptStateDTO {
   name: string;

@@ -1,26 +1,18 @@
-// @ts-check
+import "./index.css";
 
-import { setupWS } from "./ws.js";
+import { setupWS } from "./ws";
+import { findElementById } from "./findElementById";
+import { IScriptStateDTO } from "shared/actions/serverActions";
+import { ProcessStateType } from "core";
+import {
+  killScript,
+  runScript,
+  runNpmInstall
+} from "shared/actions/clientActions";
 
-const scriptsNode = document.getElementById("scripts");
-
-/** @type {HTMLTextAreaElement} */
-const stdoutNode = (() => {
-  const node = document.getElementById("stdout");
-  if (node instanceof HTMLTextAreaElement) {
-    return node;
-  }
-  throw new Error("stdout is not textarea");
-})();
-
-/** @type {HTMLButtonElement} */
-const npmInstallButton = (() => {
-  const node = document.getElementById("npm-install");
-  if (node instanceof HTMLButtonElement) {
-    return node;
-  }
-  throw new Error("stdout is not textarea");
-})();
+const scriptsNode = findElementById("scripts", HTMLElement);
+const stdoutNode = findElementById("stdout", HTMLTextAreaElement);
+const npmInstallButton = findElementById("npm-install", HTMLButtonElement);
 
 const ws = setupWS(action => {
   switch (action.type) {
@@ -56,10 +48,7 @@ ws.dispatch({ type: "scripts/GET" });
 
 scriptsNode.addEventListener("click", handleScriptClick);
 
-/**
- * @param {Array<{name: string, state: string}>} scripts
- */
-function initScriptsView(scripts) {
+function initScriptsView(scripts: IScriptStateDTO[]) {
   const scriptNodes = scripts.map(script => {
     const scriptNode = document.createElement("div");
     scriptNode.className = "scripts__script";
@@ -83,20 +72,15 @@ function initScriptsView(scripts) {
 
 function initNpmInstall() {
   npmInstallButton.addEventListener("click", () => {
-    ws.dispatch({ type: "scripts/RUN_NPM_INSTALL" });
+    ws.dispatch(runNpmInstall());
   });
 }
 
-function getScriptActionName(state) {
+function getScriptActionName(state: ProcessStateType) {
   return state === "stopped" ? "Run" : "Stop";
 }
 
-/**
- * @param {Object} scriptStateDTO
- * @param {string} scriptStateDTO.name
- * @param {string} scriptStateDTO.state
- */
-function updateScriptState(scriptStateDTO) {
+function updateScriptState(scriptStateDTO: IScriptStateDTO) {
   const { name, state } = scriptStateDTO;
   const node = scriptsNode.querySelector(`[data-name="${name}"]`);
   if (node instanceof HTMLElement) {
@@ -109,25 +93,18 @@ function updateScriptState(scriptStateDTO) {
  *
  * @param {string} state
  */
-function updateNpmInstall(state) {
+function updateNpmInstall(state: ProcessStateType) {
   const running = state === "running";
 
   npmInstallButton.disabled = running;
   npmInstallButton.innerText = running ? "installing..." : "Run npm install";
 }
 
-/**
- * @param {string} name
- * @param {string} chunk
- */
-function updateStdout(name, chunk) {
+function updateStdout(name: string, chunk: string) {
   stdoutNode.value = `${stdoutNode.value}\n[${name}]${chunk}`;
 }
 
-/**
- * @param {MouseEvent} event
- */
-function handleScriptClick(event) {
+function handleScriptClick(event: MouseEvent) {
   const node = event.target;
   if (!(node instanceof HTMLElement)) {
     return;
@@ -135,10 +112,13 @@ function handleScriptClick(event) {
 
   if (node.classList.contains("scripts__script-state")) {
     const { name, state } = node.dataset;
+    if (!name) {
+      return;
+    }
     if (state === "running") {
-      ws.dispatch({ type: "scripts/KILL", payload: name });
+      ws.dispatch(killScript(name));
     } else {
-      ws.dispatch({ type: "scripts/RUN", payload: name });
+      ws.dispatch(runScript(name));
     }
   }
 }

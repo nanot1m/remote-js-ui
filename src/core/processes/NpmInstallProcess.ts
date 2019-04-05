@@ -1,4 +1,4 @@
-import { Process } from "./Process";
+import { Process } from "core/processes/Process";
 
 export class NpmInstallProcess extends Process {
   public static create() {

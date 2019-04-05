@@ -1,10 +1,11 @@
 import child_process, { ChildProcessWithoutNullStreams } from "child_process";
 import { BehaviorSubject, Subject, Observable } from "rxjs";
-import { ProcessStateType } from "./ProcessStateType";
-import fromReadableStream from "../utils/fromReadableStream";
-import { IProcess } from "./IProcess";
-import stripAnsi from 'strip-ansi';
 import { map } from "rxjs/operators";
+import stripAnsi from 'strip-ansi';
+
+import { ProcessStateType } from "core/processes/ProcessStateType";
+import fromReadableStream from "core/utils/fromReadableStream";
+import { IProcess } from "core/processes/IProcess";
 
 export class Process implements IProcess {
   public readonly stdout: Observable<string>;
