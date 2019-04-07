@@ -7,7 +7,11 @@ export type MessageHandlerType = (
   dispatch: (action: FromClientToServerActions) => void
 ) => void;
 
-export function setupWS(messageHandler: MessageHandlerType) {
+export type DispatchType = (action: FromClientToServerActions) => void;
+
+export function setupWS(
+  messageHandler: MessageHandlerType
+): { dispatch: DispatchType } {
   const messageQueue: FromClientToServerActions[] = [];
 
   let ws: WebSocket;
@@ -29,19 +33,14 @@ export function setupWS(messageHandler: MessageHandlerType) {
         dispatch(message);
       }
     });
-
-    ws.addEventListener("close", () => {
-      setTimeout(init, 3000);
-    });
-
-    ws.addEventListener("error", () => {
-      setTimeout(init, 3000);
-    });
-
-    return ws;
   }
 
   init();
+  setInterval(() => {
+    if (ws.readyState !== ws.OPEN) {
+      init();
+    }
+  }, 5000);
 
   function dispatch(action: FromClientToServerActions) {
     if (ws.readyState === ws.OPEN) {

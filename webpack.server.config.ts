@@ -4,6 +4,7 @@ import nodeExternals from "webpack-node-externals";
 import { CheckerPlugin } from "awesome-typescript-loader";
 
 const webpackConfig: Configuration = {
+  name: "server",
   entry: {
     server: "./src/server/index.ts"
   },

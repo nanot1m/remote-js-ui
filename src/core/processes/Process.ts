@@ -1,7 +1,7 @@
 import child_process, { ChildProcessWithoutNullStreams } from "child_process";
-import { BehaviorSubject, Subject, Observable } from "rxjs";
+import { BehaviorSubject, Subject, Observable, merge } from "rxjs";
 import { map } from "rxjs/operators";
-import stripAnsi from 'strip-ansi';
+import stripAnsi from "strip-ansi";
 
 import { ProcessStateType } from "core/processes/ProcessStateType";
 import fromReadableStream from "core/utils/fromReadableStream";
@@ -20,7 +20,7 @@ export class Process implements IProcess {
 
   private readonly stdoutSubject = new Subject<string>();
 
-  private readonly args: readonly string[];
+  private readonly args: string[];
 
   public constructor(private command: string, ...args: string[]) {
     this.stdout = this.stdoutSubject.asObservable();
@@ -42,15 +42,17 @@ export class Process implements IProcess {
       detached: true
     });
 
-    this.stateSubject.next('running');
-
-    fromReadableStream<string>(this.proc.stdout).pipe(
-      map(x => stripAnsi(x.toString()))
-    ).subscribe(
-      chunk => this.stdoutSubject.next(chunk),
-      () => this.stateSubject.next("stopped"),
-      () => this.stateSubject.next("stopped")
-    );
+    this.stateSubject.next("running");
+    merge(
+      fromReadableStream<string>(this.proc.stdout),
+      fromReadableStream<string>(this.proc.stderr)
+    )
+      .pipe(map(x => stripAnsi(x.toString())))
+      .subscribe(
+        chunk => this.stdoutSubject.next(chunk),
+        () => this.stateSubject.next("stopped"),
+        () => this.stateSubject.next("stopped")
+      );
     return this;
   }
 

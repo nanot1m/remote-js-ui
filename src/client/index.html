@@ -5,28 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Remote JS UI</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&amp;subset=cyrillic"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <div class="container">
-      <aside class="card">
-        <h3>Script List</h3>
-
-        <p>
-          <button id="npm-install">Npm Install</button>
-        </p>
-
-        <div class="scripts" id="scripts"></div>
-      </aside>
-      <main class="card">
-        <h3>Stdout</h3>
-        <textarea
-          readonly
-          cols="80"
-          rows="40"
-          id="stdout"
-          class="stdout stdout__content"
-        ></textarea>
-      </main>
-    </div>
+    <div id="app"></div>
   </body>
 </html>

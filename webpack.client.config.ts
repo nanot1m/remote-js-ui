@@ -4,13 +4,14 @@ import HtmlWebPackPlugin from "html-webpack-plugin";
 import { CheckerPlugin } from "awesome-typescript-loader";
 
 const webpackConfig: Configuration = {
+  name: "client",
   entry: {
-    client: "./src/client/index.ts"
+    client: "./src/client/index.tsx"
   },
   output: {
     path: path.join(__dirname, "build/client"),
     publicPath: "/",
-    filename: "[name].js"
+    filename: "[name].[hash].js"
   },
   target: "web",
   devtool: "#source-map",

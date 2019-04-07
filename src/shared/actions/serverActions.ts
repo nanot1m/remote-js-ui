@@ -14,10 +14,13 @@ export interface IScriptStdoutChunkDTO {
 export const sendScripts = createAction(
   "scripts/SEND",
   action => ({ npmInstall, npmScripts }: IProjectScripts) => {
-    const npmScriptsDTO = Object.entries(npmScripts).map(([name, script]) => ({
-      name,
-      state: script.getState()
-    }));
+    const npmScriptsDTO = Object.entries(npmScripts).reduce(
+      (acc, [name, script]) => {
+        acc[name] = script.getState();
+        return acc;
+      },
+      {} as Record<string, ProcessStateType>
+    );
     return action({
       npmScripts: npmScriptsDTO,
       npmInstall: npmInstall.getState()
