@@ -17,7 +17,7 @@ export function setupWS(
   let ws: WebSocket;
 
   function init() {
-    ws = new WebSocket(`ws://${location.host}`);
+    ws = new WebSocket(`ws://${location.host}/ws`);
 
     ws.addEventListener("message", event => {
       const action = parseMessage<FromServerToClientActions>(event.data);

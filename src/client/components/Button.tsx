@@ -11,13 +11,13 @@ export const Button = styled.button<ColorProps>`
   padding-left: ${themeGet(`space.2`)}px;
   border: 1px solid ${themeGet(`colors.${BgColor.Control}`)};
   background-color: ${themeGet(`colors.${BgColor.White}`)};
-  transition: opacity 0.2s ease-in, background-color 0.2s ease-in;
+  transition: all 0.2s ease-out;
   border-radius: 2px;
   font-size: ${themeGet(`fontSizes.1`)}px;
 
   &:hover {
     cursor: pointer;
-    background-color: ${themeGet(`colors.${BgColor.Control}`)};
+    opacity: 0.9;
   }
 
   &:active {
@@ -26,5 +26,11 @@ export const Button = styled.button<ColorProps>`
 
   &:disabled {
     color: ${themeGet(`colors.${TextColor.Secondary}`)};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${themeGet(`colors.${BgColor.Primary}`)};
+    box-shadow: inset 0 0 0 1px ${themeGet(`colors.${BgColor.Primary}`)};
   }
 `;

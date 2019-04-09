@@ -9,22 +9,70 @@ import {
   runScript
 } from "shared/actions/clientActions";
 import { createStandardAction } from "typesafe-actions";
+import { scriptStateChange } from "shared/actions/serverActions";
 
-export interface MainState {
-  npmScripts: Record<string, ProcessStateType>;
-  npmInstall: ProcessStateType;
+export interface ScriptModelType {
+  name: string;
+  state: ProcessStateType;
   stdout: string;
 }
 
-const clearStdoutAction = createStandardAction("stdout/CLEAR")();
+export interface MainState {
+  npmScripts: Record<string, ScriptModelType>;
+  npmInstall: ProcessStateType;
+  stdout: string;
+  stdoutTabs: string[];
+  currentStdoutTab: number;
+}
 
-type ClientActions = ReturnType<typeof clearStdoutAction>;
+const clearStdoutAction = createStandardAction("stdout/CLEAR")();
+const closeStdoutTabAction = createStandardAction("stdout/CLOSE_TAB")<number>();
+const selectStdoutTabAction = createStandardAction("stdout/SELECT_TAB")<
+  number
+>();
+
+type ClientActions =
+  | ReturnType<typeof clearStdoutAction>
+  | ReturnType<typeof closeStdoutTabAction>
+  | ReturnType<typeof selectStdoutTabAction>;
 
 const initialState: MainState = {
   npmScripts: {},
   npmInstall: "stopped",
-  stdout: ""
+  stdout: "",
+  stdoutTabs: [],
+  currentStdoutTab: 0
 };
+
+function handleScriptStateChange(
+  action: ReturnType<typeof scriptStateChange>,
+  state: MainState
+) {
+  const { state: scriptState, name } = action.payload;
+
+  let nextStdoutTabs = state.stdoutTabs;
+  let nextCurrentStdoutTab = state.currentStdoutTab;
+  if (scriptState === "running") {
+    if (!nextStdoutTabs.includes(name)) {
+      nextStdoutTabs = nextStdoutTabs.concat(name);
+    }
+    nextCurrentStdoutTab = Math.max(nextStdoutTabs.indexOf(name), 0);
+  }
+
+  const updatedScript = state.npmScripts[name]
+    ? { ...state.npmScripts[name], state: scriptState }
+    : { name, state: scriptState, stdout: "" };
+
+  return {
+    ...state,
+    stdoutTabs: nextStdoutTabs,
+    currentStdoutTab: nextCurrentStdoutTab,
+    npmScripts: {
+      ...state.npmScripts,
+      [name]: updatedScript
+    }
+  };
+}
 
 function mainReducer(
   state: MainState,
@@ -36,39 +84,94 @@ function mainReducer(
         ...state,
         npmInstall: action.payload
       };
+
     case "scripts/NPM_INSTALL_STDOUT_CHUNK": {
       return {
         ...state,
         stdout: state.stdout + `[npm install]: ${action.payload}\n`
       };
     }
+
     case "scripts/SEND": {
+      const { npmInstall, npmScripts } = action.payload;
       return {
         ...state,
-        npmScripts: action.payload.npmScripts,
-        npmInstall: action.payload.npmInstall
+        npmScripts: npmScripts.reduce(
+          (acc, script) => {
+            acc[script.name] = {
+              name: script.name,
+              state: script.state,
+              stdout: ""
+            };
+            return acc;
+          },
+          {} as Record<string, ScriptModelType>
+        ),
+        npmInstall
       };
     }
+
     case "scripts/STATE_CHANGE": {
+      return handleScriptStateChange(action, state);
+    }
+
+    case "scripts/STD_OUT_NEW_CHUNK": {
+      const { name, chunk } = action.payload;
+      const updatedScript: ScriptModelType = state.npmScripts[name]
+        ? {
+            ...state.npmScripts[name],
+            stdout: state.npmScripts[name].stdout + chunk
+          }
+        : {
+            name,
+            state: "stopped",
+            stdout: chunk
+          };
+      return {
+        ...state,
+        stdout: state.stdout + `[${name}]: ${chunk}\n`,
+        npmScripts: {
+          ...state.npmScripts,
+          [name]: updatedScript
+        }
+      };
+    }
+
+    case "stdout/SELECT_TAB": {
+      return {
+        ...state,
+        currentStdoutTab: Math.min(action.payload, state.stdoutTabs.length - 1)
+      };
+    }
+
+    case "stdout/CLOSE_TAB": {
+      return {
+        ...state,
+        stdoutTabs: state.stdoutTabs.slice().splice(action.payload, 1),
+        currentStdoutTab: Math.max(
+          0,
+          Math.min(state.currentStdoutTab, state.stdoutTabs.length - 2)
+        )
+      };
+    }
+
+    case "stdout/CLEAR": {
+      const name = state.stdoutTabs[state.currentStdoutTab];
+
+      if (!name) {
+        return state;
+      }
+
+      const updatedScript: ScriptModelType = state.npmScripts[name]
+        ? { ...state.npmScripts[name], stdout: "" }
+        : { name, state: "stopped", stdout: "" };
+
       return {
         ...state,
         npmScripts: {
           ...state.npmScripts,
-          [action.payload.name]: action.payload.state
+          [name]: updatedScript
         }
-      };
-    }
-    case "scripts/STD_OUT_NEW_CHUNK": {
-      const { name, chunk } = action.payload;
-      return {
-        ...state,
-        stdout: state.stdout + `[${name}]: ${chunk}\n`
-      };
-    }
-    case "stdout/CLEAR": {
-      return {
-        ...state,
-        stdout: ""
       };
     }
     default:
@@ -103,8 +206,25 @@ export function useMainController() {
 
   const clearStdout = useCallback(() => dispatch(clearStdoutAction()), []);
 
+  const selectStdoutTab = useCallback(
+    (idx: number) => dispatch(selectStdoutTabAction(idx)),
+    []
+  );
+
+  const closeStdoutTab = useCallback(
+    (idx: number) => dispatch(closeStdoutTabAction(idx)),
+    []
+  );
+
   return [
     state,
-    { killNpmScript, runNpmScript, runNpmInstall, clearStdout }
+    {
+      killNpmScript,
+      runNpmScript,
+      runNpmInstall,
+      clearStdout,
+      selectStdoutTab,
+      closeStdoutTab
+    }
   ] as const;
 }

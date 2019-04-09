@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "node test/index.js",
-    "start": "ts-node-dev src/server/index.ts",
+    "start:client": "webpack-dev-server --config webpack.client.config.ts",
+    "start:server": "NODE_PATH=src ts-node-dev src/server/index.ts",
+    "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
     "build": "rimraf build && webpack --mode=production",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc"
@@ -35,6 +37,7 @@
     "@types/webpack-node-externals": "^1.6.3",
     "@types/ws": "^6.0.1",
     "awesome-typescript-loader": "^5.2.1",
+    "concurrently": "^4.1.0",
     "css-loader": "^2.1.1",
     "file-loader": "^3.0.1",
     "html-loader": "^0.5.5",
@@ -48,6 +51,7 @@
     "webpack-cli": "^3.3.0",
     "webpack-dev-middleware": "^3.6.2",
     "webpack-dev-server": "^3.2.1",
+    "webpack-messages": "^2.0.4",
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {

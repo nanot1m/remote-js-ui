@@ -2,6 +2,7 @@ import React, { useCallback } from "react";
 import { ProcessStateType } from "core";
 import { TextColor } from "client/themes/constants";
 import { Button } from "client/components/Button";
+import { Status } from "client/components/Status";
 
 import * as S from "./styles";
 
@@ -28,9 +29,9 @@ export const NpmScript: React.FC<NpmScriptProps> = ({
   return (
     <S.Wrapper px={4} pt={2} pb={2}>
       <S.Header>
-        <S.Status
+        <Status
           title={scriptIsRunning ? "Running" : "Stopped"}
-          bg={scriptIsRunning ? TextColor.Success : TextColor.Secondary}
+          state={scriptIsRunning ? Status.State.Running : Status.State.Stopped}
         />
         <S.Name>{name}</S.Name>
       </S.Header>

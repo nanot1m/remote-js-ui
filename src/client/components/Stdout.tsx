@@ -37,13 +37,13 @@ export const Stdout: React.FC<StdoutProps> = ({ value }) => {
   }, []);
 
   return (
-    <StyledWrapper ref={wrapperRef} onScroll={handleScroll}>
+    <StyledPreWrapper ref={wrapperRef} onScroll={handleScroll}>
       <StyledPre>{value}</StyledPre>
-    </StyledWrapper>
+    </StyledPreWrapper>
   );
 };
 
-export const StyledWrapper = styled.div`
+export const StyledPreWrapper = styled.div`
   max-width: 100%;
   overflow: auto;
   height: 80vh;

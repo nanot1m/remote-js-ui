@@ -2,8 +2,11 @@ import path from "path";
 import { Configuration } from "webpack";
 import HtmlWebPackPlugin from "html-webpack-plugin";
 import { CheckerPlugin } from "awesome-typescript-loader";
+import { Configuration as DevServerType } from "webpack-dev-server";
+// @ts-ignore
+import WebpackMessages from "webpack-messages";
 
-const webpackConfig: Configuration = {
+const webpackConfig: Configuration & { devServer?: DevServerType } = {
   name: "client",
   entry: {
     client: "./src/client/index.tsx"
@@ -15,6 +18,19 @@ const webpackConfig: Configuration = {
   },
   target: "web",
   devtool: "#source-map",
+  devServer: {
+    port: 8081,
+    proxy: {
+      "/ws": {
+        target: "http://localhost:8080",
+        ws: true
+      }
+    },
+    stats: {
+      all: false,
+      publicPath: true
+    }
+  },
   module: {
     rules: [
       {
@@ -41,6 +57,10 @@ const webpackConfig: Configuration = {
     modules: ["node_modules", "./src"]
   },
   plugins: [
+    new WebpackMessages({
+      name: "client",
+      logger: (str: string) => console.log(`>> ${str}`)
+    }),
     new HtmlWebPackPlugin({
       template: "./src/client/index.html",
       filename: "./index.html",

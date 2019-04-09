@@ -21,12 +21,3 @@ export const Header = styled.header`
   align-items: baseline;
   margin-right: ${themeGet("space.2")}px;
 `;
-
-export const Status = styled(Box)`
-  width: 10px;
-  height: 10px;
-  border-radius: 100%;
-  display: inline-block;
-  margin-right: ${themeGet("space.2")}px;
-`;
-

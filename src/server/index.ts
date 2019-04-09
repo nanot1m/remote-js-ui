@@ -22,7 +22,7 @@ function start() {
 
   const server = http.createServer(app);
 
-  const wss = new WebSocket.Server({ server });
+  const wss = new WebSocket.Server({ server, path: '/ws' });
 
   wss.on("connection", ws => {
     const subscription = getScriptsActions(scripts).subscribe(action => {
