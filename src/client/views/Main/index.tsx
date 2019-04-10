@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { Flex, Box } from "@rebass/grid";
+import React, { useState } from "react";
+import { Flex } from "@rebass/grid";
 
 import { useMainController } from "client/views/Main/controller";
 import { H3 } from "client/components/Heading";
@@ -19,6 +19,8 @@ export const Main: React.FC = () => {
     actions
   ] = useMainController();
 
+  const [menuIsOpened, setMenuIsOpened] = useState(false);
+
   const npmScriptNames = Object.keys(npmScripts).sort();
   const currentScriptName = stdoutTabs[currentStdoutTab];
   const stdout = npmScripts[currentScriptName]
@@ -28,6 +30,11 @@ export const Main: React.FC = () => {
   return (
     <Container>
       <S.Layout>
+        <S.SideToggle
+          type="checkbox"
+          checked={menuIsOpened}
+          onClick={() => setMenuIsOpened(!menuIsOpened)}
+        />
         <S.Side>
           <H3>Npm Scripts</H3>
           <List>
@@ -37,7 +44,10 @@ export const Main: React.FC = () => {
                   <NpmScript
                     state={npmScripts[name].state}
                     name={name}
-                    onStart={actions.runNpmScript}
+                    onStart={name => {
+                      actions.runNpmScript(name);
+                      setMenuIsOpened(false);
+                    }}
                     onKill={actions.killNpmScript}
                   />
                 </List.Item>
