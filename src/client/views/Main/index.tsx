@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Flex, Box } from "@rebass/grid";
 import { Card } from "client/components/Card";
 import { useMainController } from "client/views/Main/controller";
@@ -10,8 +10,11 @@ import { Stdout } from "client/components/Stdout";
 import { Tabs } from "client/components/Tabs";
 import { Button } from "client/components/Button";
 import { Status } from "client/components/Status";
+import { AnsiNode } from "ansi-to-json";
 
 import * as S from "./styles";
+
+const emptyArray = [] as AnsiNode[];
 
 export const Main: React.FC = () => {
   const [
@@ -23,7 +26,11 @@ export const Main: React.FC = () => {
   const currentScriptName = stdoutTabs[currentStdoutTab];
   const stdout = npmScripts[currentScriptName]
     ? npmScripts[currentScriptName].stdout
-    : "";
+    : emptyArray;
+
+  const stdoutNodes = useMemo(() => stdout.map(ansiNodeToReactElement), [
+    stdout
+  ]);
 
   return (
     <Container>
@@ -78,10 +85,24 @@ export const Main: React.FC = () => {
                 );
               })}
             </Tabs>
-            <Stdout value={stdout} />
+            <Stdout>{stdoutNodes}</Stdout>
           </Card>
         </S.Main>
       </Flex>
     </Container>
   );
 };
+
+function ansiNodeToReactElement(node: AnsiNode, idx: number) {
+  const textColor = node.fg_truecolor || node.fg;
+  const bgColor = node.bg_truecolor || node.bg;
+
+  const color = textColor ? `rgb(${textColor})` : undefined;
+  const background = bgColor ? `rgb(${bgColor})` : undefined;
+
+  return (
+    <span key={idx} style={{ color, background }}>
+      {node.content}
+    </span>
+  );
+}

@@ -4,10 +4,10 @@ import { themeGet } from "styled-system";
 import { BgColor, FontSize, LineHeight } from "client/themes/constants";
 
 interface StdoutProps {
-  value: string;
+  children: React.ReactNode;
 }
 
-export const Stdout: React.FC<StdoutProps> = ({ value }) => {
+export const Stdout: React.FC<StdoutProps> = ({ children }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const [stickedToBottom, setStickedToBottom] = useState(true);
@@ -20,7 +20,7 @@ export const Stdout: React.FC<StdoutProps> = ({ value }) => {
     if (stickedToBottom) {
       wrapperNode.scrollTop = wrapperNode.scrollHeight;
     }
-  }, [value, stickedToBottom]);
+  }, [children, stickedToBottom]);
 
   const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const target = event.currentTarget;
@@ -33,7 +33,7 @@ export const Stdout: React.FC<StdoutProps> = ({ value }) => {
 
   return (
     <StyledPreWrapper ref={wrapperRef} onScroll={handleScroll}>
-      <StyledPre>{value}</StyledPre>
+      <StyledPre>{children}</StyledPre>
     </StyledPreWrapper>
   );
 };

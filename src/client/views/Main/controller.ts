@@ -10,11 +10,12 @@ import {
 import { createStandardAction } from "typesafe-actions";
 import { scriptStateChange } from "shared/actions/serverActions";
 import { tupple } from "shared/utils/tupple";
+import ansiToJson, { AnsiNode } from "ansi-to-json";
 
 export interface ScriptModelType {
   name: string;
   state: ProcessStateType;
-  stdout: string;
+  stdout: AnsiNode[];
 }
 
 export interface MainState {
@@ -57,7 +58,7 @@ function handleScriptStateChange(
 
   const updatedScript = state.npmScripts[name]
     ? { ...state.npmScripts[name], state: scriptState }
-    : { name, state: scriptState, stdout: "" };
+    : { name, state: scriptState, stdout: [] };
 
   return {
     ...state,
@@ -84,7 +85,7 @@ function mainReducer(
             acc[script.name] = {
               name: script.name,
               state: script.state,
-              stdout: ""
+              stdout: []
             };
             return acc;
           },
@@ -102,12 +103,12 @@ function mainReducer(
       const updatedScript: ScriptModelType = state.npmScripts[name]
         ? {
             ...state.npmScripts[name],
-            stdout: state.npmScripts[name].stdout + chunk
+            stdout: state.npmScripts[name].stdout.concat(ansiToJson(chunk))
           }
         : {
             name,
             state: "stopped",
-            stdout: chunk
+            stdout: ansiToJson(chunk)
           };
       return {
         ...state,
@@ -144,8 +145,8 @@ function mainReducer(
       }
 
       const updatedScript: ScriptModelType = state.npmScripts[name]
-        ? { ...state.npmScripts[name], stdout: "" }
-        : { name, state: "stopped", stdout: "" };
+        ? { ...state.npmScripts[name], stdout: [] }
+        : { name, state: "stopped", stdout: [] };
 
       return {
         ...state,

@@ -1,7 +1,6 @@
 import child_process, { ChildProcessWithoutNullStreams } from "child_process";
 import { BehaviorSubject, Subject, Observable, merge } from "rxjs";
 import { map } from "rxjs/operators";
-import stripAnsi from "strip-ansi";
 
 import { ProcessStateType } from "core/processes/ProcessStateType";
 import fromReadableStream from "core/utils/fromReadableStream";
@@ -47,7 +46,7 @@ export class Process implements IProcess {
       fromReadableStream<string>(this.proc.stdout),
       fromReadableStream<string>(this.proc.stderr)
     )
-      .pipe(map(x => stripAnsi(x.toString())))
+      .pipe(map(x => x.toString()))
       .subscribe(
         chunk => this.stdoutSubject.next(chunk),
         () => this.stateSubject.next("stopped"),
