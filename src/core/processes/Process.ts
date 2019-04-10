@@ -5,6 +5,7 @@ import { map } from "rxjs/operators";
 import { ProcessStateType } from "core/processes/ProcessStateType";
 import fromReadableStream from "core/utils/fromReadableStream";
 import { IProcess } from "core/processes/IProcess";
+import { createInterface } from "readline";
 
 export class Process implements IProcess {
   public readonly stdout: Observable<string>;
@@ -41,17 +42,21 @@ export class Process implements IProcess {
       detached: true
     });
 
+    createInterface({
+      input: this.proc.stdout,
+      terminal: true
+    }).on("line", line => this.stdoutSubject.next(line));
+
+    createInterface({
+      input: this.proc.stderr,
+      terminal: true
+    }).on("line", line => this.stdoutSubject.next(line));
+
     this.stateSubject.next("running");
-    merge(
-      fromReadableStream<string>(this.proc.stdout),
-      fromReadableStream<string>(this.proc.stderr)
-    )
-      .pipe(map(x => x.toString()))
-      .subscribe(
-        chunk => this.stdoutSubject.next(chunk),
-        () => this.stateSubject.next("stopped"),
-        () => this.stateSubject.next("stopped")
-      );
+
+    this.proc.on("exit", () => this.stateSubject.next("stopped"));
+    this.proc.on("error", () => this.stateSubject.next("stopped"));
+
     return this;
   }
 

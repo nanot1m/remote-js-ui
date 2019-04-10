@@ -10,12 +10,11 @@ import {
 import { createStandardAction } from "typesafe-actions";
 import { scriptStateChange } from "shared/actions/serverActions";
 import { tupple } from "shared/utils/tupple";
-import ansiToJson, { AnsiNode } from "ansi-to-json";
 
 export interface ScriptModelType {
   name: string;
   state: ProcessStateType;
-  stdout: AnsiNode[];
+  stdout: string;
 }
 
 export interface MainState {
@@ -44,7 +43,7 @@ const initialState: MainState = {
 function handleScriptStateChange(
   action: ReturnType<typeof scriptStateChange>,
   state: MainState
-) {
+): MainState {
   const { state: scriptState, name } = action.payload;
 
   let nextStdoutTabs = state.stdoutTabs;
@@ -58,7 +57,7 @@ function handleScriptStateChange(
 
   const updatedScript = state.npmScripts[name]
     ? { ...state.npmScripts[name], state: scriptState }
-    : { name, state: scriptState, stdout: [] };
+    : { name, state: scriptState, stdout: "" };
 
   return {
     ...state,
@@ -85,7 +84,7 @@ function mainReducer(
             acc[script.name] = {
               name: script.name,
               state: script.state,
-              stdout: []
+              stdout: ""
             };
             return acc;
           },
@@ -103,12 +102,12 @@ function mainReducer(
       const updatedScript: ScriptModelType = state.npmScripts[name]
         ? {
             ...state.npmScripts[name],
-            stdout: state.npmScripts[name].stdout.concat(ansiToJson(chunk))
+            stdout: state.npmScripts[name].stdout.concat("\n", chunk)
           }
         : {
             name,
             state: "stopped",
-            stdout: ansiToJson(chunk)
+            stdout: chunk
           };
       return {
         ...state,
@@ -127,12 +126,14 @@ function mainReducer(
     }
 
     case "stdout/CLOSE_TAB": {
+      const nextTabs = state.stdoutTabs.slice();
+      nextTabs.splice(action.payload, 1);
       return {
         ...state,
-        stdoutTabs: state.stdoutTabs.slice().splice(action.payload, 1),
+        stdoutTabs: nextTabs,
         currentStdoutTab: Math.max(
           0,
-          Math.min(state.currentStdoutTab, state.stdoutTabs.length - 2)
+          Math.min(state.currentStdoutTab, nextTabs.length - 1)
         )
       };
     }
@@ -145,8 +146,8 @@ function mainReducer(
       }
 
       const updatedScript: ScriptModelType = state.npmScripts[name]
-        ? { ...state.npmScripts[name], stdout: [] }
-        : { name, state: "stopped", stdout: [] };
+        ? { ...state.npmScripts[name], stdout: "" }
+        : { name, state: "stopped", stdout: "" };
 
       return {
         ...state,

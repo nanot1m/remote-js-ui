@@ -13,6 +13,10 @@ import {
 import { themeGet } from "styled-system";
 
 const GlobalStyle = createGlobalStyle`
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
   html {
     min-height: 100%;
     background-color: ${themeGet(`colors.${BgColor.Main}`)};
