@@ -5,11 +5,11 @@ import { DispatchType, setupWS } from "client/ws";
 import {
   getScripts,
   killScript,
-  runNpmInstall as runNpmInstallAction,
   runScript
 } from "shared/actions/clientActions";
 import { createStandardAction } from "typesafe-actions";
 import { scriptStateChange } from "shared/actions/serverActions";
+import { tupple } from "shared/utils/tupple";
 
 export interface ScriptModelType {
   name: string;
@@ -19,8 +19,6 @@ export interface ScriptModelType {
 
 export interface MainState {
   npmScripts: Record<string, ScriptModelType>;
-  npmInstall: ProcessStateType;
-  stdout: string;
   stdoutTabs: string[];
   currentStdoutTab: number;
 }
@@ -38,8 +36,6 @@ type ClientActions =
 
 const initialState: MainState = {
   npmScripts: {},
-  npmInstall: "stopped",
-  stdout: "",
   stdoutTabs: [],
   currentStdoutTab: 0
 };
@@ -79,21 +75,8 @@ function mainReducer(
   action: FromServerToClientActions | ClientActions
 ): MainState {
   switch (action.type) {
-    case "scripts/NPM_INSTALL_STATE":
-      return {
-        ...state,
-        npmInstall: action.payload
-      };
-
-    case "scripts/NPM_INSTALL_STDOUT_CHUNK": {
-      return {
-        ...state,
-        stdout: state.stdout + `[npm install]: ${action.payload}\n`
-      };
-    }
-
     case "scripts/SEND": {
-      const { npmInstall, npmScripts } = action.payload;
+      const { npmScripts } = action.payload;
       return {
         ...state,
         npmScripts: npmScripts.reduce(
@@ -106,8 +89,7 @@ function mainReducer(
             return acc;
           },
           {} as Record<string, ScriptModelType>
-        ),
-        npmInstall
+        )
       };
     }
 
@@ -129,7 +111,6 @@ function mainReducer(
           };
       return {
         ...state,
-        stdout: state.stdout + `[${name}]: ${chunk}\n`,
         npmScripts: {
           ...state.npmScripts,
           [name]: updatedScript
@@ -199,11 +180,6 @@ export function useMainController() {
     []
   );
 
-  const runNpmInstall = useCallback(
-    () => wsDispatch.current(runNpmInstallAction()),
-    []
-  );
-
   const clearStdout = useCallback(() => dispatch(clearStdoutAction()), []);
 
   const selectStdoutTab = useCallback(
@@ -216,15 +192,11 @@ export function useMainController() {
     []
   );
 
-  return [
-    state,
-    {
-      killNpmScript,
-      runNpmScript,
-      runNpmInstall,
-      clearStdout,
-      selectStdoutTab,
-      closeStdoutTab
-    }
-  ] as const;
+  return tupple(state, {
+    killNpmScript,
+    runNpmScript,
+    clearStdout,
+    selectStdoutTab,
+    closeStdoutTab
+  });
 }

@@ -1,9 +1,4 @@
-import React, {
-  useCallback,
-  useLayoutEffect,
-  useRef,
-  useState
-} from "react";
+import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { themeGet } from "styled-system";
 import { BgColor, FontSize, LineHeight } from "client/themes/constants";
@@ -48,9 +43,11 @@ export const StyledPreWrapper = styled.div`
   overflow: auto;
   height: 80vh;
   border: 1px solid ${themeGet(`colors.${BgColor.Control}`)};
+  margin-top: -1px;
 `;
 
 export const StyledPre = styled.pre`
   font-size: ${themeGet(`fontSizes.${FontSize.S}`)}px;
   line-height: ${themeGet(`lineHeights.${LineHeight.SInset}`)}px;
+  white-space: pre-wrap;
 `;

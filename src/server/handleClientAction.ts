@@ -19,9 +19,5 @@ export function handleClientAction(scripts: IProjectScripts, ws: WebSocket) {
     if (action.type === "scripts/GET") {
       sendMessage(ws, sendScripts(scripts));
     }
-
-    if (action.type === "scripts/RUN_NPM_INSTALL") {
-      scripts.npmInstall.run();
-    }
   };
 }

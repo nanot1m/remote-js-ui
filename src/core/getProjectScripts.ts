@@ -6,7 +6,6 @@ import { IProcess } from "core/processes/IProcess";
 
 export interface IProjectScripts {
   readonly npmScripts: Record<string, IProcess>;
-  readonly npmInstall: IProcess;
 }
 
 export function getProjectScripts(): IProjectScripts {
@@ -16,14 +15,11 @@ export function getProjectScripts(): IProjectScripts {
     })
   );
   const npmScripts = Object.keys(packageJson.scripts || {}).reduce(
-    (acc: Record<string, NpmScriptProcess>, name: string) => {
+    (acc: Record<string, IProcess>, name: string) => {
       acc[name] = NpmScriptProcess.fromScriptName(name);
       return acc;
     },
-    {}
+    { "npm install": NpmInstallProcess.create() }
   );
-  return {
-    npmScripts,
-    npmInstall: NpmInstallProcess.create()
-  };
+  return { npmScripts };
 }

@@ -37,10 +37,8 @@ const StyledTab = styled(Button)<{ active?: boolean }>`
 const StyledTabs = styled.div`
   display: flex;
   overflow: auto;
-  border: 1px solid ${themeGet(`colors.${BgColor.Control}`)};
-  border-top-width: 2px;
 
   ${StyledTab}:not(:first-child) {
-    border-left: 1px solid ${themeGet(`colors.${BgColor.White}`)};
+    margin-left: ${themeGet(`space.1`)}px;
   }
 `;

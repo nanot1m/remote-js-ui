@@ -15,7 +15,7 @@ import * as S from "./styles";
 
 export const Main: React.FC = () => {
   const [
-    { npmScripts, npmInstall, stdoutTabs, currentStdoutTab },
+    { npmScripts, stdoutTabs, currentStdoutTab },
     actions
   ] = useMainController();
 
@@ -24,6 +24,7 @@ export const Main: React.FC = () => {
   const stdout = npmScripts[currentScriptName]
     ? npmScripts[currentScriptName].stdout
     : "";
+
   return (
     <Container>
       <Flex flexDirection={["column", "row"]} mt={5} mb={10}>
@@ -31,13 +32,6 @@ export const Main: React.FC = () => {
           <Card>
             <H3>Npm Scripts</H3>
             <List>
-              <List.Item>
-                <NpmScript
-                  state={npmInstall}
-                  name={"npm install"}
-                  onStart={actions.runNpmInstall}
-                />
-              </List.Item>
               {npmScriptNames.map(name => {
                 return (
                   <List.Item key={name}>

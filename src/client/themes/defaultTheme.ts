@@ -1,6 +1,14 @@
-import { BgColor, FontSize, LineHeight, Radius, Shadow, TextColor } from "./constants";
+import {
+  BgColor,
+  FontSize,
+  LineHeight,
+  Radius,
+  Shadow,
+  TextColor
+} from "./constants";
+import { ThemeType } from "./ThemeType";
 
-export const defaultTheme = {
+export const defaultTheme: ThemeType = {
   space: [0, 4, 8, 12, 16, 20, 24, 28, 40, 60],
   colors: {
     [TextColor.Primary]: "#333",
@@ -43,6 +51,4 @@ export const defaultTheme = {
     [LineHeight.XL]: 26,
     [LineHeight.XXL]: 38
   }
-} as const;
-
-export type AppDefaultTheme = typeof defaultTheme;
+};

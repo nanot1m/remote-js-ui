@@ -5,6 +5,7 @@ import { BgColor, TextColor } from "client/themes/constants";
 export const Button = styled.button<ColorProps>`
   ${color};
 
+  margin: 0;
   padding-top: ${themeGet(`space.1`)}px;
   padding-right: ${themeGet(`space.2`)}px;
   padding-bottom: ${themeGet(`space.1`)}px;

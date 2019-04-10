@@ -2,13 +2,11 @@ import { IProjectScripts } from "core";
 import { merge } from "rxjs";
 import { map } from "rxjs/operators";
 import {
-  npmInstallStdoutChunk,
-  npmInstalState,
   scriptStateChange,
   scriptStdOutNewChunk
 } from "shared/actions/serverActions";
 
-export function getScriptsActions({ npmInstall, npmScripts }: IProjectScripts) {
+export function getScriptsActions({ npmScripts }: IProjectScripts) {
   const npmScriptActions = Object.entries(npmScripts).map(([name, script]) =>
     merge(
       script.stdout.pipe(map(chunk => scriptStdOutNewChunk({ name, chunk }))),
@@ -16,10 +14,5 @@ export function getScriptsActions({ npmInstall, npmScripts }: IProjectScripts) {
     )
   );
 
-  const npmInstallActions = merge(
-    npmInstall.stdout.pipe(map(chunk => npmInstallStdoutChunk(chunk))),
-    npmInstall.state.pipe(map(state => npmInstalState(state)))
-  );
-
-  return merge(...npmScriptActions, npmInstallActions);
+  return merge(...npmScriptActions);
 }
