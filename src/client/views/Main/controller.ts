@@ -14,7 +14,7 @@ import { tupple } from "shared/utils/tupple";
 export interface ScriptModelType {
   name: string;
   state: ProcessStateType;
-  stdout: string;
+  stdout: string[];
 }
 
 export interface MainState {
@@ -55,9 +55,9 @@ function handleScriptStateChange(
     nextCurrentStdoutTab = Math.max(nextStdoutTabs.indexOf(name), 0);
   }
 
-  const updatedScript = state.npmScripts[name]
+  const updatedScript: ScriptModelType = state.npmScripts[name]
     ? { ...state.npmScripts[name], state: scriptState }
-    : { name, state: scriptState, stdout: "" };
+    : { name, state: scriptState, stdout: [] };
 
   return {
     ...state,
@@ -84,7 +84,7 @@ function mainReducer(
             acc[script.name] = {
               name: script.name,
               state: script.state,
-              stdout: ""
+              stdout: []
             };
             return acc;
           },
@@ -102,12 +102,12 @@ function mainReducer(
       const updatedScript: ScriptModelType = state.npmScripts[name]
         ? {
             ...state.npmScripts[name],
-            stdout: state.npmScripts[name].stdout.concat("\n", chunk)
+            stdout: state.npmScripts[name].stdout.concat(chunk)
           }
         : {
             name,
             state: "stopped",
-            stdout: chunk
+            stdout: [chunk]
           };
       return {
         ...state,
@@ -146,8 +146,8 @@ function mainReducer(
       }
 
       const updatedScript: ScriptModelType = state.npmScripts[name]
-        ? { ...state.npmScripts[name], stdout: "" }
-        : { name, state: "stopped", stdout: "" };
+        ? { ...state.npmScripts[name], stdout: [] }
+        : { name, state: "stopped", stdout: [] };
 
       return {
         ...state,

@@ -1,7 +1,7 @@
 import { Box } from "@rebass/grid";
 import styled from "styled-components";
-import { Card } from "client/components/Card";
 import { themeGet, defaultBreakpoints } from "styled-system";
+import { Card } from "client/components/Card";
 
 export const Layout = styled(Box)`
   display: flex;
@@ -10,12 +10,9 @@ export const Layout = styled(Box)`
   min-height: 0;
 `;
 
-Layout.defaultProps = {
-  pt: [1, 5],
-  pb: [1, 5]
-};
+Layout.defaultProps = {};
 
-export const Main = styled(Card)`
+export const Main = styled(Box)`
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -26,9 +23,16 @@ export const Main = styled(Card)`
 `;
 
 Main.defaultProps = {
-  ...Card.defaultProps,
-  ml: [0, 10]
+  ml: [0, 10],
+  pt: [1, 5],
+  pb: [1, 5]
 };
+
+export const MainInner = styled(Card)`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
 
 export const SideToggle = styled.input`
   display: none;
@@ -42,7 +46,7 @@ export const SideToggle = styled.input`
   }
 `;
 
-export const Side = styled(Card)`
+export const Side = styled(Box)`
   overflow: scroll;
   min-width: fit-content;
   align-self: flex-start;
@@ -51,7 +55,6 @@ export const Side = styled(Card)`
 
   @media (max-width: ${defaultBreakpoints[0]}) {
     z-index: 1;
-    /* display: none; */
     position: fixed;
     top: ${themeGet("space.1")}px;
     left: ${themeGet("space.1")}px;
@@ -69,7 +72,8 @@ export const Side = styled(Card)`
 `;
 
 Side.defaultProps = {
-  ...Card.defaultProps,
-  mr: [0, 10],
+  pt: [1, 5],
+  pb: [1, 5],
+  pr: [0, 10],
   mb: [4, 0]
 };
