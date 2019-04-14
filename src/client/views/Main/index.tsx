@@ -10,9 +10,9 @@ import { Stdout } from "client/components/Stdout";
 import { Tabs } from "client/components/Tabs";
 import { Button } from "client/components/Button";
 import { Status } from "client/components/Status";
+import { Card } from "client/components/Card";
 
 import * as S from "./styles";
-import { Card } from "client/components/Card";
 
 export const Main: React.FC = () => {
   const [
@@ -95,7 +95,7 @@ export const Main: React.FC = () => {
                 );
               })}
             </Tabs>
-            <Stdout lines={stdout} />
+            <Stdout lines={stdout} name={currentScriptName} />
           </S.MainInner>
         </S.Main>
       </S.Layout>

@@ -10,16 +10,26 @@ import {
   OnScrollParams
 } from "react-virtualized";
 
-const cache = new CellMeasurerCache({
-  defaultHeight: 18,
-  fixedWidth: true
-});
+const cellMeasurerCacheMap = new Map<string, CellMeasurerCache>();
+
+function getCacheByName(name: string) {
+  if (cellMeasurerCacheMap.has(name)) {
+    return cellMeasurerCacheMap.get(name)!;
+  }
+  const cache = new CellMeasurerCache({
+    defaultHeight: 18,
+    fixedWidth: true
+  });
+  cellMeasurerCacheMap.set(name, cache);
+  return cache;
+}
 
 interface StdoutProps {
   lines: string[];
+  name: string;
 }
 
-export const Stdout: React.FC<StdoutProps> = ({ lines }) => {
+export const Stdout: React.FC<StdoutProps> = ({ lines, name }) => {
   const [stickedToBottom, setStickedToBottom] = useState(false);
 
   const handleScroll = useCallback((params: OnScrollParams) => {
@@ -29,6 +39,8 @@ export const Stdout: React.FC<StdoutProps> = ({ lines }) => {
       setStickedToBottom(false);
     }
   }, []);
+
+  const cache = getCacheByName(name);
 
   return (
     <StyledPreWrapper>
