@@ -34,7 +34,7 @@ export const Main: React.FC = () => {
         <S.SideToggle
           type="checkbox"
           checked={menuIsOpened}
-          onClick={() => setMenuIsOpened(!menuIsOpened)}
+          onChange={() => setMenuIsOpened(!menuIsOpened)}
         />
         <S.Side>
           <Card>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 import { themeGet } from "styled-system";
 import { BgColor, FontSize, LineHeight } from "client/themes/constants";
@@ -6,7 +6,8 @@ import {
   AutoSizer,
   List,
   CellMeasurer,
-  CellMeasurerCache
+  CellMeasurerCache,
+  OnScrollParams
 } from "react-virtualized";
 
 const cache = new CellMeasurerCache({
@@ -19,6 +20,16 @@ interface StdoutProps {
 }
 
 export const Stdout: React.FC<StdoutProps> = ({ lines }) => {
+  const [stickedToBottom, setStickedToBottom] = useState(false);
+
+  const handleScroll = useCallback((params: OnScrollParams) => {
+    if (params.clientHeight + params.scrollTop >= params.scrollHeight) {
+      setStickedToBottom(true);
+    } else {
+      setStickedToBottom(false);
+    }
+  }, []);
+
   return (
     <StyledPreWrapper>
       <StyledPre>
@@ -40,6 +51,8 @@ export const Stdout: React.FC<StdoutProps> = ({ lines }) => {
               )}
               rowCount={lines.length}
               rowHeight={cache.rowHeight}
+              scrollToIndex={stickedToBottom ? lines.length - 1 : undefined}
+              onScroll={handleScroll}
               {...size}
             />
           )}
